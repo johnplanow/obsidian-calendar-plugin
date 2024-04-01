@@ -24,7 +24,7 @@ export async function tryToCreateDailyNote(
   const createFile = async () => {
     const dailyNote = await createDailyNote(date);
 
-    const markdownLeaves = this.settings.pinDailyNoteToTopLeft
+    const markdownLeaves = this?.settings?.pinDailyNoteToTopLeft
                             ? workspace.getLeavesOfType("markdown")
                             : null;
     const leaf = markdownLeaves && markdownLeaves.length > 0
