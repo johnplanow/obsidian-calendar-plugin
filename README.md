@@ -2,6 +2,8 @@
 
 This plugin for [Obsidian](https://obsidian.md/) creates a simple Calendar view for visualizing and navigating between your daily notes.
 
+❗❗❗ This custom version includes a new setting to force the daily note to remain in the top left pane. To install it, clone the repo into your vault's plugin directory (`<vault>/.obsidian/plugins`), then run `npm install` and `npm run build`. You'll then need to force Obsidian to reload (View -> Force Reload) and enable the plugin. Be sure to disable the original Calendar plugin if you haven't.
+
 ![screenshot-full](https://raw.githubusercontent.com/liamcain/obsidian-calendar-plugin/master/images/screenshot-full.png)
 
 ## Usage
