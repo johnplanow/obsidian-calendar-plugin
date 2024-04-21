@@ -2,7 +2,7 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 import { appHasDailyNotesPluginLoaded } from "obsidian-daily-notes-interface";
 import type { ILocaleOverride, IWeekStartOption } from "obsidian-calendar-ui";
 
-import { DEFAULT_WEEK_FORMAT, DEFAULT_WORDS_PER_DOT } from "src/constants";
+import { DEFAULT_DAILY_NOTE_TAG, DEFAULT_WEEK_FORMAT, DEFAULT_WORDS_PER_DOT } from "src/constants";
 
 import type CalendarPlugin from "./main";
 
@@ -10,7 +10,8 @@ export interface ISettings {
   wordsPerDot: number;
   weekStart: IWeekStartOption;
   shouldConfirmBeforeCreate: boolean;
-  pinDailyNoteToTopLeft: boolean;
+  replaceDailyNoteWithTag: boolean;
+  dailyNoteTag: string;
 
   // Weekly Note settings
   showWeeklyNote: boolean;
@@ -33,7 +34,8 @@ const weekdays = [
 
 export const defaultSettings = Object.freeze({
   shouldConfirmBeforeCreate: true,
-  pinDailyNoteToTopLeft: false,
+  replaceDailyNoteWithTag: false,
+  dailyNoteTag: DEFAULT_DAILY_NOTE_TAG,
   weekStart: "locale" as IWeekStartOption,
 
   wordsPerDot: DEFAULT_WORDS_PER_DOT,
@@ -82,7 +84,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.addDotThresholdSetting();
     this.addWeekStartSetting();
     this.addConfirmCreateSetting();
-    this.addPinDailyNoteToTopLeftSetting();
+    this.addReplaceDailyNoteWithTagSetting();
     this.addShowWeeklyNoteSetting();
 
     if (
@@ -164,15 +166,25 @@ export class CalendarSettingsTab extends PluginSettingTab {
       });
   }
 
-  addPinDailyNoteToTopLeftSetting(): void {
+  addReplaceDailyNoteWithTagSetting(): void {
     new Setting(this.containerEl)
-      .setName("Pin daily note to top left")
-      .setDesc("Daily note will always be displayed in the first (top left) pane")
+      .setName("Replace tagged daily note")
+      .setDesc("Daily note will open in the same pane as a note with the same tag. If none are open, it will fall back to the last active pane.")
       .addToggle((toggle) => {
-        toggle.setValue(this.plugin.options.pinDailyNoteToTopLeft);
+        toggle.setValue(this.plugin.options.replaceDailyNoteWithTag);
         toggle.onChange(async (value) => {
           this.plugin.writeOptions(() => ({
-            pinDailyNoteToTopLeft: value,
+            replaceDailyNoteWithTag: value,
+          }));
+        });
+      })
+      .addText((textfield) => {
+        textfield.setPlaceholder(String(DEFAULT_WORDS_PER_DOT));
+        textfield.inputEl.type = "string";
+        textfield.setValue(String(this.plugin.options.dailyNoteTag));
+        textfield.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({
+            dailyNoteTag: value,
           }));
         });
       });
