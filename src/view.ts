@@ -319,14 +319,15 @@ export default class CalendarView extends ItemView {
           activeFile.setFile(dailyNote);
         }
       );
-      return;
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mode = (this.app.vault as any).getConfig("defaultViewMode");
+      await leaf.openFile(existingFile, { active : true, mode });
+      activeFile.setFile(existingFile);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mode = (this.app.vault as any).getConfig("defaultViewMode");
-    
-    await leaf.openFile(existingFile, { active : true, mode });
-
-    activeFile.setFile(existingFile);
+    if (this.settings.pinDailyNote) {
+      leaf.setPinned(true)
+    }
   }
 }

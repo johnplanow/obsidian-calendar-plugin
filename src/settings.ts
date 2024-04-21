@@ -12,6 +12,7 @@ export interface ISettings {
   shouldConfirmBeforeCreate: boolean;
   replaceDailyNoteWithTag: boolean;
   dailyNoteTag: string;
+  pinDailyNote: boolean;
 
   // Weekly Note settings
   showWeeklyNote: boolean;
@@ -36,6 +37,7 @@ export const defaultSettings = Object.freeze({
   shouldConfirmBeforeCreate: true,
   replaceDailyNoteWithTag: false,
   dailyNoteTag: DEFAULT_DAILY_NOTE_TAG,
+  pinDailyNote: false,
   weekStart: "locale" as IWeekStartOption,
 
   wordsPerDot: DEFAULT_WORDS_PER_DOT,
@@ -84,6 +86,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.addDotThresholdSetting();
     this.addWeekStartSetting();
     this.addConfirmCreateSetting();
+    this.addPinDailyNoteSetting();
     this.addReplaceDailyNoteWithTagSetting();
     this.addShowWeeklyNoteSetting();
 
@@ -161,6 +164,20 @@ export class CalendarSettingsTab extends PluginSettingTab {
         toggle.onChange(async (value) => {
           this.plugin.writeOptions(() => ({
             shouldConfirmBeforeCreate: value,
+          }));
+        });
+      });
+  }
+
+  addPinDailyNoteSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Pin daily note after opening")
+      .setDesc("The daily note will be pinned after it's opened/created")
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.options.pinDailyNote);
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({
+            pinDailyNote: value,
           }));
         });
       });
