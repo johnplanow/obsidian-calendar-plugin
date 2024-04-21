@@ -6,7 +6,7 @@ import {
   getWeeklyNote,
   getWeeklyNoteSettings,
 } from "obsidian-daily-notes-interface";
-import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
+import { FileView, TFile, ItemView, WorkspaceLeaf, getAllTags } from "obsidian";
 import { get } from "svelte/store";
 
 import { TRIGGER_ON_OPEN, VIEW_TYPE_CALENDAR } from "src/constants";
@@ -288,11 +288,32 @@ export default class CalendarView extends ItemView {
   ): Promise<void> {
     const { workspace } = this.app;
     const existingFile = getDailyNote(date, get(dailyNotes));
+
+    // figure out the leaf in which to open
+    let leaf = inNewSplit
+      ? workspace.splitActiveLeaf()
+      : workspace.getUnpinnedLeaf()
+
+    if (this.settings.replaceDailyNoteWithTag) {
+        const markdownLeaves = workspace.getLeavesOfType("markdown");
+        for (const markdownLeaf of markdownLeaves) {
+            const file = markdownLeaf?.view?.file;
+            const cache = this.app.metadataCache?.getFileCache(file);
+            const fileTags = cache
+              ? getAllTags(cache)?.map((tag) => tag.substring(1)) || []
+              : [];
+
+            if (fileTags.includes(this.settings.dailyNoteTag)) {
+                leaf = markdownLeaf;
+            }
+        }
+    }
+
     if (!existingFile) {
       // File doesn't exist
       tryToCreateDailyNote(
         date,
-        inNewSplit,
+        leaf,
         this.settings,
         (dailyNote: TFile) => {
           activeFile.setFile(dailyNote);
@@ -304,13 +325,6 @@ export default class CalendarView extends ItemView {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mode = (this.app.vault as any).getConfig("defaultViewMode");
     
-    const markdownLeaves = this.settings.pinDailyNoteToTopLeft 
-                            ? workspace.getLeavesOfType("markdown")
-                            : null;
-    const leaf = markdownLeaves && markdownLeaves.length > 0
-                    ? markdownLeaves[0]
-                    : inNewSplit ? workspace.splitActiveLeaf() : workspace.getUnpinnedLeaf();
-
     await leaf.openFile(existingFile, { active : true, mode });
 
     activeFile.setFile(existingFile);
